@@ -1,0 +1,61 @@
+import { memo } from "react"
+import PropTypes from "prop-types"
+import { getDisplayName } from "../../config/entities"
+
+const Row = memo(function Row({ row, columns, pk, onEdit, onDelete }) {  return (
+    <tr>
+      {columns.map((col) => (
+        <td key={col.key}>
+          {col.key === "nombre_completo" ? getDisplayName(row) || "—" : (row[col.key] ?? "—")}
+        </td>
+      ))}
+      <td className="actions">
+        <button type="button" className="link-button" onClick={() => onEdit(row)}>
+          Editar
+        </button>
+        <button type="button" className="link-button danger" onClick={() => onDelete(row[pk])}>
+          Eliminar
+        </button>
+      </td>
+    </tr>
+  )
+})
+
+Row.propTypes = {
+  row: PropTypes.object.isRequired,
+  columns: PropTypes.array.isRequired,
+  pk: PropTypes.string.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+}
+
+export default function DataTable({ rows, columns, pk, onEdit, onDelete }) {
+  if (rows.length === 0) return <p className="muted">Sin registros.</p>
+  return (
+    <div className="table-wrap">
+      <table className="data-table">
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th key={col.key}>{col.label}</th>
+            ))}
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <Row key={row[pk]} row={row} columns={columns} pk={pk} onEdit={onEdit} onDelete={onDelete} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+DataTable.propTypes = {
+  rows: PropTypes.array.isRequired,
+  columns: PropTypes.array.isRequired,
+  pk: PropTypes.string.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+}
