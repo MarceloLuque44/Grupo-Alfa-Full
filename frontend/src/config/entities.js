@@ -85,7 +85,56 @@ export const ENTITIES = {
       { name: "hora_inicio", label: "Hora inicio", type: "time", required: false },
       { name: "hora_fin", label: "Hora fin", type: "time", required: false },
     ],
-    hint: "id_convocatoria e id_aula son obligatorios y deben existir (RESTRICT).",
+    hint: "id_convocatoria e id_aula son obligatorios y deben existir (RESTRICT). Gestiónalos en las pestañas Convocatorias, Facultades y Aulas.",
+    tabs: ["capacitaciones", "convocatorias", "facultades", "aulas"],
+  },
+  // Sub-módulos de Capacitaciones: no están en ENTITY_ORDER (sin enlace lateral propio),
+  // se gestionan en las pestañas de la página de capacitaciones.
+  convocatorias: {
+    key: "convocatorias",
+    label: "Convocatorias",
+    path: "/app/capacitaciones",
+    endpoint: "convocatorias",
+    pk: "id_convocatoria",
+    columns: [
+      { key: "id_convocatoria", label: "ID" },
+      { key: "id_facultad", label: "Facultad (ID)" },
+      { key: "fecha_inicio", label: "Inicio" },
+    ],
+    fields: [
+      { name: "id_facultad", label: "ID facultad", type: "number", required: true },
+      { name: "fecha_inicio", label: "Fecha de inicio", type: "date", required: true },
+    ],
+    hint: "El id_facultad debe existir. Créalo en la pestaña Facultades.",
+  },
+  facultades: {
+    key: "facultades",
+    label: "Facultades",
+    path: "/app/capacitaciones",
+    endpoint: "facultades",
+    pk: "id_facultad",
+    columns: [
+      { key: "id_facultad", label: "ID" },
+      { key: "nombre", label: "Nombre" },
+    ],
+    fields: [
+      { name: "nombre", label: "Nombre de la facultad", type: "text", required: true, maxLength: 150 },
+    ],
+  },
+  aulas: {
+    key: "aulas",
+    label: "Aulas",
+    path: "/app/capacitaciones",
+    endpoint: "aulas",
+    pk: "id_aula",
+    columns: [
+      { key: "id_aula", label: "ID" },
+      { key: "capacidad", label: "Capacidad" },
+    ],
+    fields: [
+      { name: "capacidad", label: "Capacidad", type: "number", required: true },
+    ],
+    hint: "La capacidad debe ser mayor a 0.",
   },
   temas: {
     key: "temas",

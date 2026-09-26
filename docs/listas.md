@@ -1,8 +1,9 @@
 # Bitácora del proceso: pantalla "Llamar lista" + endpoints faltantes
 
 Documento que registra, en orden cronológico, todo el trabajo realizado en la sesión:
-1) nueva pantalla de pase de lista en el dashboard (skill `react-vite-best-practices`) y
-2) creación de los endpoints de las tablas faltantes (skill `rest-api-design`).
+1) nueva pantalla de pase de lista en el dashboard (skill `react-vite-best-practices`),
+2) creación de los endpoints de las tablas faltantes (skill `rest-api-design`) y
+3) CRUDs de convocatoria, facultad y aula integrados como pestañas en la página Capacitaciones (skill `react-vite-best-practices`).
 
 ---
 
@@ -118,3 +119,37 @@ Guardas DELETE (409 específico): facultades←carreras/convocatorias, aulas←c
 - `PaseListaPage` ya puede usar `GET /matriculaciones?id_curso_capacitacion=X` (sin fallback).
 - Guardar asistencia real: `POST /api/clases` (curso + asesor + tema + `inicioClase`) y luego un `POST /api/asistencias` por estudiante (`id_clase`, `id_estudiante`, `hora_entrada` ISO 8601, `permiso`/`razon_permiso` opcionales).
 - Deuda de módulos previos (anotada en el plan §6): `materias←examenes`, `asesores←clases`, `estudiantes←matriculaciones/mensualidades`, `capacitaciones←matriculaciones` usan el 409 genérico del `errorMiddleware`; migrar a guardas específicas.
+
+---
+
+## 3. CRUDs de convocatoria, facultad y aula en la página Capacitaciones
+
+### 3.1. Motivación
+
+Crear un curso de capacitación exige `id_convocatoria` e `id_aula` existentes (RESTRICT), y una convocatoria exige `id_facultad`. Antes había que adivinar esos IDs; ahora la página Capacitaciones incluye sus CRUDs como pestañas, en orden de dependencia: facultad → convocatoria/aula → curso.
+
+### 3.2. Reglas de la skill aplicadas
+
+| Regla | Aplicación |
+|---|---|
+| `split-component-lazy` | El panel CRUD vive en su propio chunk y solo se monta la pestaña activa; las inactivas no piden datos (`CapacitacionesPage.jsx`) |
+| `split-prefetch-hints` | `preloadCrud` calienta el chunk del CRUD en hover/foco de pestaña antes del clic |
+| `split-suspense-boundaries` | `Suspense` + `Skeleton` por panel y en `EntityPage.jsx` para la página |
+| `build-manual-chunks` | Sin cambios; el build confirma el chunk `CapacitacionesPage` separado |
+
+### 3.3. Archivos creados
+
+- **`frontend/src/pages/app/CapacitacionesPage.jsx`** — pestañas Capacitaciones (default), Convocatorias, Facultades y Aulas; cada una reutiliza el `CrudPage` existente (buscar, crear, editar, eliminar con validaciones del backend) con `key={entity.key}` para estado independiente por pestaña.
+
+### 3.4. Archivos modificados
+
+- `frontend/src/config/entities.js` — nuevas entidades `convocatorias` (ID facultad + fecha inicio), `facultades` (nombre) y `aulas` (capacidad) conectadas a `/convocatorias`, `/facultades`, `/aulas`; **no** entran a `ENTITY_ORDER` (sin enlace lateral propio). `capacitaciones` declara sus `tabs` y hints que guían el orden de carga.
+- `frontend/src/pages/app/EntityPage.jsx` — renderiza `CapacitacionesPage` (lazy) cuando la clave es `capacitaciones`.
+
+### 3.5. Verificación
+
+`npm run build` → `✓ built in 2.48s` (tras corregir rutas relativas `../ui` → `../../components/ui` que rompían el primer build). Lateral y dashboard intactos.
+
+### 3.6. Mejora posible (fuera de alcance)
+
+El formulario de capacitaciones sigue pidiendo IDs numéricos de convocatoria y aula; el siguiente paso sería convertir esos campos en selects alimentados por `GET /convocatorias` y `GET /aulas`.
