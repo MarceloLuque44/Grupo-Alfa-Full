@@ -7,6 +7,7 @@ import { ENTITIES } from "../../config/entities"
 
 const UsuariosPage = lazy(() => import("./UsuariosPage"))
 const CapacitacionesPage = lazy(() => import("./CapacitacionesPage"))
+const MatriculacionesPage = lazy(() => import("./MatriculacionesPage"))
 
 export default function EntityPage() {
   const { entityKey } = useParams()
@@ -26,6 +27,13 @@ export default function EntityPage() {
     return (
       <Suspense fallback={<Skeleton lines={6} />}>
         <CapacitacionesPage />
+      </Suspense>
+    )
+  }
+  if (entity.key === "matriculaciones") {
+    return (
+      <Suspense fallback={<Skeleton lines={6} />}>
+        <MatriculacionesPage />
       </Suspense>
     )
   }

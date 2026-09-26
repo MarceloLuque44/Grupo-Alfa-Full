@@ -177,9 +177,42 @@ export const ENTITIES = {
     ],
     hint: "No se gestiona la foto por API en esta versión.",
   },
+  matriculaciones: {
+    key: "matriculaciones",
+    label: "Matriculaciones",
+    path: "/app/matriculaciones",
+    endpoint: "matriculaciones",
+    pk: "id_matriculacion",
+    columns: [
+      { key: "id_matriculacion", label: "ID" },
+      { key: "estudiante", label: "Estudiante" },
+      { key: "curso", label: "Curso" },
+      { key: "vigente", label: "Vigente" },
+      { key: "nro_comprobante", label: "Comprobante" },
+      { key: "nro_credencial", label: "Credencial" },
+    ],
+    tabs: ["matriculaciones", "mensualidades"],
+    hint: "Relaciona un estudiante con un curso de capacitación. Usa el buscador por nombre para elegir al estudiante.",
+  },
+  mensualidades: {
+    key: "mensualidades",
+    label: "Mensualidades",
+    path: "/app/matriculaciones",
+    endpoint: "mensualidades",
+    pk: "id_mensualidad",
+    columns: [
+      { key: "id_mensualidad", label: "ID" },
+      { key: "estudiante", label: "Estudiante" },
+      { key: "administrativo", label: "Administrativo" },
+      { key: "fecha_inicio_mensualidad", label: "Inicio" },
+      { key: "fecha_fin_mensualidad", label: "Fin" },
+      { key: "pago", label: "Pago" },
+    ],
+    hint: "Registra el pago mensual de un estudiante. Usa los buscadores por nombre.",
+  },
 }
 
-export const ENTITY_ORDER = ["usuarios", "materias", "asesores", "capacitaciones", "temas", "estudiantes"]
+export const ENTITY_ORDER = ["usuarios", "materias", "asesores", "capacitaciones", "matriculaciones", "temas", "estudiantes"]
 
 export function getDisplayName(row) {
   const parts = [row.nombre, row.apellido_paterno, row.apellido_materno].filter(Boolean)
