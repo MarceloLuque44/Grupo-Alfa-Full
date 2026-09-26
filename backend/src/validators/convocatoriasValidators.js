@@ -1,0 +1,17 @@
+import { z } from "zod";
+
+const convocatoriaSchema = z.object({
+  id_facultad: z.coerce
+    .number({ invalid_type_error: "El id_facultad debe ser numérico" })
+    .int("El id_facultad debe ser un entero")
+    .positive("El id_facultad debe ser mayor a 0"),
+  fecha_inicio: z
+    .string({ required_error: "La fecha de inicio es obligatoria" })
+    .trim()
+    .refine((v) => !Number.isNaN(new Date(v).getTime()), {
+      message: "La fecha de inicio debe ser una fecha válida",
+    }),
+});
+
+export const createConvocatoriaSchema = convocatoriaSchema;
+export const updateConvocatoriaSchema = convocatoriaSchema.partial();

@@ -8,6 +8,7 @@ import Skeleton from "../components/ui/Skeleton"
 const LoginPage = lazy(() => import("../pages/auth/LoginPage"))
 const RegisterPage = lazy(() => import("../pages/auth/RegisterPage"))
 const DashboardPage = lazy(() => import("../pages/app/DashboardPage"))
+const PaseListaPage = lazy(() => import("../pages/app/PaseListaPage"))
 const EntityPage = lazy(() => import("../pages/app/EntityPage"))
 const NotFoundPage = lazy(() => import("../pages/app/NotFoundPage"))
 
@@ -33,6 +34,7 @@ export default function AppRouter() {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="pase-lista" element={<PaseListaPage />} />
         <Route path=":entityKey" element={<EntityPage />} />
       </Route>
 

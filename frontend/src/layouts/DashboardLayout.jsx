@@ -8,7 +8,12 @@ export default function DashboardLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const key = location.pathname.split("/")[2] ?? "dashboard"
-  const title = key === "dashboard" ? "Dashboard" : (ENTITIES[key]?.label ?? "Dashboard")
+  const title =
+    key === "dashboard"
+      ? "Dashboard"
+      : key === "pase-lista"
+        ? "Llamar lista"
+        : (ENTITIES[key]?.label ?? "Dashboard")
 
   const handleSignOut = () => {
     signOut()

@@ -128,7 +128,8 @@ label {
   margin-top: 10px;
 }
 
-input {
+input,
+select {
   background: #ffffff;
   border: 1px solid #c9d6e8;
   border-radius: 4px;
@@ -139,7 +140,8 @@ input {
   width: 100%;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: #1565c0;
   box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
 }

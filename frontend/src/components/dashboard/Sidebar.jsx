@@ -4,6 +4,7 @@ import { ENTITIES, ENTITY_ORDER } from "../../config/entities"
 
 const lazyCrud = () => import("./CrudPage.jsx")
 const lazyHome = () => import("./DashboardHome.jsx")
+const lazyPaseLista = () => import("../../pages/app/PaseListaPage.jsx")
 
 export default function Sidebar() {
   return (
@@ -31,6 +32,14 @@ export default function Sidebar() {
             {ENTITIES[key].label}
           </NavLink>
         ))}
+        <NavLink
+          to="/app/pase-lista"
+          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+          onMouseEnter={lazyPaseLista}
+          onFocus={lazyPaseLista}
+        >
+          Llamar lista
+        </NavLink>
       </nav>
     </aside>
   )
