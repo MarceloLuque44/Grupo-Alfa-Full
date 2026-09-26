@@ -21,7 +21,7 @@ export default function Sidebar() {
         >
           Dashboard
         </NavLink>
-        {ENTITY_ORDER.map((key) => (
+        {ENTITY_ORDER.filter((key) => !ENTITIES[key].hideFromNav).map((key) => (
           <NavLink
             key={key}
             to={ENTITIES[key].path}

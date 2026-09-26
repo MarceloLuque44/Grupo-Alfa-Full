@@ -35,6 +35,7 @@ export const ENTITIES = {
   materias: {
     key: "materias",
     label: "Materias",
+    hideFromNav: true,
     path: "/app/materias",
     endpoint: "materias",
     pk: "id_materia",
@@ -49,6 +50,7 @@ export const ENTITIES = {
   asesores: {
     key: "asesores",
     label: "Asesores",
+    hideFromNav: true,
     path: "/app/asesores",
     endpoint: "asesores",
     pk: "id_asesor",
@@ -139,6 +141,7 @@ export const ENTITIES = {
   temas: {
     key: "temas",
     label: "Temas",
+    hideFromNav: true,
     path: "/app/temas",
     endpoint: "temas",
     pk: "id_tema",
@@ -156,6 +159,7 @@ export const ENTITIES = {
   estudiantes: {
     key: "estudiantes",
     label: "Estudiantes",
+    hideFromNav: true,
     path: "/app/estudiantes",
     endpoint: "estudiantes",
     pk: "id_estudiante",

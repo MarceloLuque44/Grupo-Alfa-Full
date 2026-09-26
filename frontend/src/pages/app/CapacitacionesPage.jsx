@@ -11,10 +11,13 @@ const CrudPanel = lazy(loadCrud)
 const preloadCrud = () => loadCrud()
 
 const TABS = ["capacitaciones", "convocatorias", "facultades", "aulas"]
+const CURSOS_TABS = ["materias", "temas"]
 
 export default function CapacitacionesPage() {
   const [active, setActive] = useState("capacitaciones")
+  const [activeCurso, setActiveCurso] = useState("materias")
   const entity = ENTITIES[active]
+  const cursoEntity = ENTITIES[activeCurso]
 
   return (
     <section>
@@ -42,6 +45,28 @@ export default function CapacitacionesPage() {
       </p>
       <Suspense fallback={<Skeleton lines={6} />}>
         <CrudPanel key={entity.key} entity={entity} />
+      </Suspense>
+
+      <h2 style={{ marginTop: 40 }}>Cursos</h2>
+      <p className="muted">Materias y temas que conforman los cursos.</p>
+      <div className="toggle-group" role="tablist" aria-label="Módulos de cursos">
+        {CURSOS_TABS.map((key) => (
+          <button
+            key={key}
+            role="tab"
+            aria-selected={activeCurso === key}
+            type="button"
+            className={activeCurso === key ? "toggle-chip active" : "toggle-chip"}
+            onClick={() => setActiveCurso(key)}
+            onMouseEnter={preloadCrud}
+            onFocus={preloadCrud}
+          >
+            {ENTITIES[key].label}
+          </button>
+        ))}
+      </div>
+      <Suspense fallback={<Skeleton lines={6} />}>
+        <CrudPanel key={cursoEntity.key} entity={cursoEntity} />
       </Suspense>
     </section>
   )
