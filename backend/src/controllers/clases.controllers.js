@@ -7,6 +7,15 @@ const crud = createCrud({
   writable: ["id_curso_capacitacion", "id_asesor", "id_tema", "inicioClase"],
   filters: ["id_curso_capacitacion", "id_asesor", "id_tema"],
   filterAliases: { id_curso: "id_curso_capacitacion", curso: "id_curso_capacitacion" },
+  dateRange: { column: "inicioClase", desdeParam: "desde", hastaParam: "hasta" },
+  customFilters: [
+    {
+      // La materia llega vía la puente asignaciones_materias (curso ↔ materia).
+      param: "id_materia",
+      clause: (table, p) =>
+        `EXISTS (SELECT 1 FROM asignaciones_materias am WHERE am.id_curso_capacitacion = ${table}.id_curso_capacitacion AND am.id_materia = ${p})`,
+    },
+  ],
   fks: [
     {
       column: "id_curso_capacitacion",

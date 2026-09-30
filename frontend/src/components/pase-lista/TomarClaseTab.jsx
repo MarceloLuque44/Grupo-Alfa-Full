@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from "react"
 import Skeleton from "../ui/Skeleton"
 import Button from "../ui/Button"
 import { listResource } from "../../services/academicService"
-import { loadEstudiantesPorCurso } from "../../services/paseListaService"
+import { guardarListaEnBD, loadEstudiantesPorCurso, resolverTemaPorNombre } from "../../services/paseListaService"
 
 // split-dynamic-imports: la tabla solo se carga cuando hay curso seleccionado.
 const PaseListaTable = lazy(() => import("./PaseListaTable.jsx"))
@@ -30,6 +30,7 @@ export default function TomarClaseTab({ catalogs, onSaved }) {
   const [alumnosNota, setAlumnosNota] = useState("")
   const [asistencia, setAsistencia] = useState({})
   const [guardado, setGuardado] = useState("")
+  const [saving, setSaving] = useState(false)
 
   const usuariosById = useMemo(() => {
     const map = new Map()
@@ -126,24 +127,47 @@ export default function TomarClaseTab({ catalogs, onSaved }) {
     }
   }, [asistencia, alumnos.length])
 
-  const handleGuardar = () => {
-    const payload = {
-      ...form,
-      curso: cursoSeleccionado?.nombre ?? "",
-      lista: alumnos.map((a) => ({
+  const handleGuardar = async () => {
+    if (saving) return
+    const marcados = alumnos
+      .map((a) => ({
         id_estudiante: a.id_estudiante ?? a.id,
         nombre: nombreEstudiante(a),
         presente: asistencia[a.id_estudiante ?? a.id] ?? null,
-      })),
+      }))
+      .filter((m) => m.presente !== null)
+    if (marcados.length === 0) {
+      setGuardado("Marca al menos un estudiante como presente o ausente antes de guardar.")
+      return
     }
+    setSaving(true)
+    setGuardado("")
     try {
-      const prev = JSON.parse(localStorage.getItem("ga_pase_lista") ?? "[]")
-      prev.push({ guardadoEn: new Date().toISOString(), ...payload })
-      localStorage.setItem("ga_pase_lista", JSON.stringify(prev))
-      setGuardado(`Lista guardada (${payload.lista.length} estudiante(s), ${resumen.presentes} presente(s)). Ver pestaña Asistencias.`)
+      const idTema = await resolverTemaPorNombre(form.temaAvanzado)
+      const { idClase, fallos } = await guardarListaEnBD({
+        idCurso: form.idCurso,
+        idAsesor: form.idAsesor,
+        idTema,
+        fecha: form.fecha,
+        marcados,
+      })
+      if (fallos > 0) {
+        setGuardado(`La clase se creó, pero ${fallos} asistencia(s) no se guardaron. Revisa e intenta de nuevo.`)
+        return
+      }
+      // Éxito total: en localStorage queda SOLO la última lista.
+      const payload = { guardadoEn: new Date().toISOString(), ...form, curso: cursoSeleccionado?.nombre ?? "", id_clase: idClase, lista: marcados }
+      try {
+        localStorage.setItem("ga_pase_lista", JSON.stringify(payload))
+      } catch {
+        // storage no disponible: la BD ya quedó guardada
+      }
+      setGuardado(`Lista guardada en BD (${marcados.length} asistencia(s), ${resumen.presentes} presente(s)). Ver pestaña Asistencias.`)
       onSaved?.()
-    } catch {
-      setGuardado("No se pudo guardar la lista en este navegador.")
+    } catch (error) {
+      setGuardado(error.message ?? "No se pudo guardar la lista.")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -242,7 +266,7 @@ export default function TomarClaseTab({ catalogs, onSaved }) {
 
       {form.idCurso && alumnos.length > 0 && (
         <div style={{ marginTop: 16, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-          <Button type="button" onClick={handleGuardar}>Guardar lista</Button>
+          <Button type="button" onClick={handleGuardar} disabled={saving}>{saving ? "Guardando..." : "Guardar lista"}</Button>
           {guardado && <span className="muted">{guardado}</span>}
         </div>
       )}

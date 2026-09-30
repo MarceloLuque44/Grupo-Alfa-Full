@@ -22,9 +22,16 @@ import { pool } from "../db.js";
  *   FKs a verificar antes de INSERT/UPDATE → `409 { error }` si no existe el padre
  * @param {{table:string,fk:string,message:string}[]} [cfg.deleteGuards]
  *   chequeos previos en DELETE (relaciones `RESTRICT`) → `409 { error }` específico
+ * @param {{column:string,desdeParam?:string,hastaParam?:string}} [cfg.dateRange]
+ *   filtro por rango de fechas (`?desde= &hasta=`, 400 si son inválidas)
+ * @param {{param:string,clause:(table:string,placeholder:string)=>string}[]} [cfg.customFilters]
+ *   filtros extra por query (ej. vía `EXISTS` en tablas puente)
  */
+export const PAGE_DEFAULT_LIMIT = 25;
+export const PAGE_MAX_LIMIT = 100;
+
 export function createCrud(cfg) {
-  const { table, pk, label, writable, filters = [], filterAliases = {}, fks = [], deleteGuards = [] } = cfg;
+  const { table, pk, label, writable, filters = [], filterAliases = {}, fks = [], deleteGuards = [], dateRange = null, customFilters = [] } = cfg;
 
   const buildWhere = (query) => {
     const clauses = [];
@@ -54,9 +61,40 @@ export function createCrud(cfg) {
   const list = async (req, res, next) => {
     try {
       const { clauses, values } = buildWhere(req.query);
+      if (dateRange) {
+        const { column, desdeParam = "desde", hastaParam = "hasta" } = dateRange;
+        const desde = req.query?.[desdeParam];
+        const hasta = req.query?.[hastaParam];
+        if (desde !== undefined && desde !== "") {
+          if (Number.isNaN(new Date(desde).getTime())) {
+            return res.status(400).json({ message: `El parámetro ${desdeParam} debe ser una fecha válida` });
+          }
+          values.push(desde);
+          clauses.push(`${column} >= $${values.length}`);
+        }
+        if (hasta !== undefined && hasta !== "") {
+          if (Number.isNaN(new Date(hasta).getTime())) {
+            return res.status(400).json({ message: `El parámetro ${hastaParam} debe ser una fecha válida` });
+          }
+          values.push(hasta);
+          clauses.push(`${column} <= $${values.length}`);
+        }
+      }
+      for (const cf of customFilters) {
+        const v = req.query?.[cf.param];
+        if (v === undefined || v === "") continue;
+        values.push(v);
+        clauses.push(cf.clause(table, `$${values.length}`));
+      }
+      let limit = parseInt(req.query?.limit, 10);
+      if (Number.isNaN(limit)) limit = PAGE_DEFAULT_LIMIT;
+      limit = Math.min(Math.max(limit, 1), PAGE_MAX_LIMIT);
+      let offset = parseInt(req.query?.offset, 10);
+      if (Number.isNaN(offset) || offset < 0) offset = 0;
+      values.push(limit, offset);
       const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
       const { rows } = await pool.query(
-        `SELECT * FROM ${table} ${where} ORDER BY ${pk} ASC`,
+        `SELECT * FROM ${table} ${where} ORDER BY ${pk} ASC LIMIT $${values.length - 1} OFFSET $${values.length}`,
         values,
       );
       res.status(200).json(rows);
